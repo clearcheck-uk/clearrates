@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ClearRates — UK Employment Rates for Claude</title>
+  <link rel="icon" href="https://raw.githubusercontent.com/clearcheck-uk/clearrates/main/public/favicon.png">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f1624; color: #fff; }
+    nav { padding: 20px 40px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #1e2d4a; }
+    nav img { width: 36px; height: 36px; border-radius: 8px; }
+    nav span { font-size: 20px; font-weight: 700; color: #fff; }
+    .hero { text-align: center; padding: 80px 20px 60px; }
+    .hero h1 { font-size: 48px; font-weight: 800; line-height: 1.1; margin-bottom: 20px; }
+    .hero h1 span { color: #22c55e; }
+    .hero p { font-size: 20px; color: #94a3b8; max-width: 620px; margin: 0 auto 16px; line-height: 1.6; }
+    .hero .sub { font-size: 16px; color: #64748b; margin-bottom: 40px; }
+    .cta { display: inline-block; background: #22c55e; color: #000; padding: 16px 36px; border-radius: 8px; font-size: 18px; font-weight: 700; text-decoration: none; }
+    .cta:hover { background: #16a34a; }
+    .beta { display: inline-block; margin-left: 16px; color: #94a3b8; font-size: 16px; }
+    .problem { background: #1a2744; border-top: 1px solid #1e3a5f; border-bottom: 1px solid #1e3a5f; padding: 60px 20px; text-align: center; }
+    .problem h2 { font-size: 28px; font-weight: 700; margin-bottom: 16px; }
+    .problem p { color: #94a3b8; font-size: 16px; max-width: 600px; margin: 0 auto; line-height: 1.6; }
+    .example { background: #0f1624; border: 1px solid #ef4444; border-radius: 8px; padding: 16px 20px; max-width: 560px; margin: 24px auto 0; text-align: left; font-family: monospace; font-size: 14px; }
+    .example .label { color: #ef4444; font-size: 12px; margin-bottom: 8px; font-family: sans-serif; font-weight: 600; }
+    .example p { color: #94a3b8; }
+    .example .wrong { color: #f87171; }
+    .example .right { color: #22c55e; }
+    .tools { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; max-width: 1000px; margin: 60px auto; padding: 0 20px; }
+    .tool { background: #1a2744; border: 1px solid #1e3a5f; border-radius: 12px; padding: 24px; }
+    .tool h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+    .tool p { font-size: 14px; color: #94a3b8; line-height: 1.5; }
+    .tool .icon { font-size: 28px; margin-bottom: 12px; }
+    .setup { max-width: 700px; margin: 0 auto 80px; padding: 0 20px; }
+    .setup h2 { font-size: 32px; font-weight: 700; margin-bottom: 30px; text-align: center; }
+    .step { display: flex; gap: 16px; margin-bottom: 24px; align-items: flex-start; }
+    .step-num { background: #22c55e; color: #000; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; flex-shrink: 0; }
+    .step-text h4 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+    .step-text p { font-size: 14px; color: #94a3b8; }
+    code { background: #1a2744; border: 1px solid #1e3a5f; padding: 12px 16px; border-radius: 8px; display: block; font-size: 13px; color: #22c55e; margin-top: 8px; font-family: monospace; word-break: break-all; }
+    .price { text-align: center; padding: 60px 20px; background: #1a2744; border-top: 1px solid #1e3a5f; border-bottom: 1px solid #1e3a5f; }
+    .price h2 { font-size: 32px; font-weight: 700; margin-bottom: 8px; }
+    .price .amount { font-size: 56px; font-weight: 800; color: #22c55e; }
+    .price .period { font-size: 20px; color: #94a3b8; }
+    .price p { color: #94a3b8; margin: 16px 0 30px; font-size: 16px; }
+    .legal { text-align: center; padding: 40px 20px; color: #475569; font-size: 13px; max-width: 700px; margin: 0 auto; line-height: 1.6; }
+    .badge { display: inline-block; background: #1e3a5f; color: #94a3b8; padding: 4px 10px; border-radius: 4px; font-size: 12px; margin-bottom: 16px; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <img src="https://raw.githubusercontent.com/clearcheck-uk/clearrates/main/public/favicon.png" alt="ClearRates">
+  <span>ClearRates</span>
+</nav>
+
+<div class="hero">
+  <div class="badge">UK Employment Rates · Claude Plugin</div>
+  <h1>Stop getting wrong rates<br>from <span>Claude</span>.</h1>
+  <p>Claude's training data goes out of date. ClearRates gives Claude always-current UK statutory employment rates — NMW, SSP, SMP, NI thresholds, redundancy caps, and more.</p>
+  <p class="sub">Updated every April. Sourced from GOV.UK. Trusted by HR teams and payroll professionals.</p>
+  <a href="mailto:traveltaxdesk@gmail.com?subject=ClearRates Access Request" class="cta">Get Access</a>
+  <span class="beta">Currently in beta · £99/month</span>
+</div>
+
+<div class="problem">
+  <h2>Claude gets statutory rates wrong — constantly.</h2>
+  <p>Its training data is months or years out of date. Every April the rates change. Claude doesn't know. Your calculations are wrong before you even start.</p>
+  <div class="example">
+    <div class="label">WITHOUT CLEARRATES</div>
+    <p>You: "What's the current NLW rate?"</p>
+    <p class="wrong">Claude: "The National Living Wage is £12.21 per hour." ✗ (2025-26 rate — wrong)</p>
+  </div>
+  <div class="example">
+    <div class="label">WITH CLEARRATES</div>
+    <p>You: "What's the current NLW rate?"</p>
+    <p class="right">Claude: "The National Living Wage is £12.71 per hour from 1 April 2026." ✓</p>
+  </div>
+</div>
+
+<div class="tools">
+  <div class="tool">
+    <div class="icon">💷</div>
+    <h3>NMW / NLW Rates</h3>
+    <p>Current National Minimum and Living Wage rates for every age group. Updated every April.</p>
+  </div>
+  <div class="tool">
+    <div class="icon">🤒</div>
+    <h3>Statutory Sick Pay</h3>
+    <p>Current SSP weekly rate, qualifying conditions, and earnings threshold. No more outdated figures.</p>
+  </div>
+  <div class="tool">
+    <div class="icon">👶</div>
+    <h3>SMP / SPP / SAP</h3>
+    <p>Statutory Maternity, Paternity, Adoption and Shared Parental Pay rates — current and accurate.</p>
+  </div>
+  <div class="tool">
+    <div class="icon">📊</div>
+    <h3>NI Thresholds</h3>
+    <p>Employee and employer NI rates and thresholds including the Employment Allowance.</p>
+  </div>
+  <div class="tool">
+    <div class="icon">🧮</div>
+    <h3>Redundancy Calculator</h3>
+    <p>Calculate exact statutory redundancy pay with age-based multipliers, capped at current limits.</p>
+  </div>
+  <div class="tool">
+    <div class="icon">⚖️</div>
+    <h3>Tribunal Limits</h3>
+    <p>Current employment tribunal compensation caps for unfair dismissal claims.</p>
+  </div>
+</div>
+
+<div class="setup">
+  <h2>How to connect</h2>
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-text">
+      <h4>Get your licence key</h4>
+      <p>Email us at traveltaxdesk@gmail.com — we'll send your key within 24 hours.</p>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-text">
+      <h4>Add to Claude Desktop config</h4>
+      <p>Add ClearRates to your claude_desktop_config.json:</p>
+      <code>{"mcpServers": {"clearrates": {"command": "npx", "args": ["-y", "mcp-remote", "https://clearrates.onrender.com/mcp", "--header", "Authorization:Bearer YOUR_KEY"]}}}</code>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-text">
+      <h4>Start checking</h4>
+      <p>Restart Claude and ask: "What's the current SSP weekly rate?" or "Calculate redundancy for age 45, 8 years, £650/week"</p>
+    </div>
+  </div>
+</div>
+
+<div class="price">
+  <h2>Simple pricing</h2>
+  <div><span class="amount">£99</span><span class="period">/month</span></div>
+  <p>Unlimited lookups · All tools · Always current · Cancel anytime</p>
+  <a href="mailto:traveltaxdesk@gmail.com?subject=ClearRates Access Request" class="cta">Get Access →</a>
+</div>
+
+<div class="legal">
+  <p>ClearRates is a decision-support tool. Always verify critical figures before making employment decisions. Your organisation retains sole responsibility for payroll and HR compliance.</p>
+  <br>
+  <p>Data source: GOV.UK (Open Government Licence v3.0) · Rates updated annually each April</p>
+  <br>
+  <p><a href="https://github.com/clearcheck-uk/clearrates/blob/main/PRIVACY.md" style="color:#475569">Privacy Policy</a> · <a href="https://github.com/clearcheck-uk/clearrates/blob/main/README.md" style="color:#475569">Documentation</a> · traveltaxdesk@gmail.com</p>
+</div>
+
+</body>
+</html>

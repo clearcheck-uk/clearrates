@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: clearrates-mcp
+    runtime: node
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: REVIEWER_KEY
+        value: clearrates-reviewer-2026
+      - key: JWT_SECRET
+        value: cr-jwt-a9f4e2c81b3d7056e2a4f9c30b87d51e
+      - key: BASE_URL
+        value: https://clearrates.onrender.com

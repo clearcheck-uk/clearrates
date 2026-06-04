@@ -4,6 +4,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js'
 import { z } from 'zod'
 import crypto from 'crypto'
+import axios from 'axios'
 
 const PORT = parseInt(process.env.PORT || '3000')
 const REVIEWER_KEY = process.env.REVIEWER_KEY || ''
@@ -11,6 +12,8 @@ const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'https://claude.ai,https
 const JWT_SECRET = process.env.JWT_SECRET ||
   crypto.createHash('sha256').update('clearrates-' + (REVIEWER_KEY || 'default')).digest('hex')
 const BASE_URL = (process.env.BASE_URL || 'https://clearrates.onrender.com').replace(/\/$/, '')
+const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET || ''
+const RESEND_API_KEY = process.env.RESEND_API_KEY || ''
 
 // ── Rates database ────────────────────────────────────────────────────────────
 // Source: GOV.UK (Open Government Licence v3.0) — updated manually each April
@@ -263,8 +266,46 @@ setInterval(() => { const n = Date.now(); for (const [k, v] of authCodes) if (v.
 async function validateKey(key: string): Promise<boolean> {
   if (!key) return false
   if (REVIEWER_KEY && key === REVIEWER_KEY) return true
-  // Add LemonSqueezy validation here once live
-  return false
+  const payload = verifyJWT(key)
+  return payload !== null && payload.type === 'licence_key' && typeof payload.sub === 'string'
+}
+
+function generateLicenceKey(email: string, stripeSubId: string): string {
+  return signJWT({ sub: email, stripe_sub: stripeSubId, type: 'licence_key' }, 60 * 60 * 24 * 40)
+}
+
+function verifyStripeSignature(payload: string, sigHeader: string, secret: string): boolean {
+  try {
+    const parts: Record<string, string> = {}
+    for (const part of sigHeader.split(',')) {
+      const eq = part.indexOf('=')
+      if (eq > 0) parts[part.slice(0, eq)] = part.slice(eq + 1)
+    }
+    if (!parts.t || !parts.v1) return false
+    const expected = crypto.createHmac('sha256', secret).update(`${parts.t}.${payload}`).digest('hex')
+    const expectedBuf = Buffer.from(expected, 'hex')
+    const actualBuf = Buffer.from(parts.v1, 'hex')
+    if (expectedBuf.length !== actualBuf.length) return false
+    return crypto.timingSafeEqual(expectedBuf, actualBuf)
+  } catch { return false }
+}
+
+async function sendLicenceEmail(email: string, key: string, isRenewal = false): Promise<void> {
+  const subject = isRenewal
+    ? 'Your ClearRates licence key has been renewed'
+    : 'Your ClearRates licence key — getting started'
+  const configSnippet = `{"mcpServers":{"clearrates":{"command":"npx","args":["-y","mcp-remote","https://clearrates.onrender.com/mcp","--header","Authorization:Bearer ${key}"]}}}`
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body style="margin:0;padding:0;background:#0a0f1e;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;"><div style="max-width:600px;margin:0 auto;padding:40px 24px;"><img src="https://raw.githubusercontent.com/clearcheck-uk/clearrates/main/public/favicon.png" width="48" height="48" style="border-radius:10px;margin-bottom:24px;display:block;"><h1 style="color:#fff;font-size:24px;font-weight:800;margin:0 0 12px;">${isRenewal ? 'Your licence key has been renewed' : 'Welcome to ClearRates'}</h1><p style="color:#94a3b8;font-size:16px;margin:0 0 32px;line-height:1.6;">${isRenewal ? 'Your subscription has renewed. Here is your updated licence key.' : 'Thanks for subscribing. Copy your licence key below and follow the setup steps to connect Claude to always-current UK statutory employment rates.'}</p><div style="background:#1a2744;border:1px solid #1e3a5f;border-radius:10px;padding:20px;margin-bottom:32px;"><p style="color:#94a3b8;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;margin:0 0 10px;">Your licence key</p><code style="color:#22c55e;font-size:13px;word-break:break-all;font-family:'SF Mono','Fira Code',monospace;line-height:1.6;">${key}</code></div><h3 style="color:#fff;font-size:16px;font-weight:700;margin:0 0 12px;">How to connect in 2 minutes</h3><p style="color:#94a3b8;font-size:14px;margin:0 0 12px;">Add this to your <code style="color:#22c55e;">claude_desktop_config.json</code>:</p><div style="background:#1a2744;border:1px solid #1e3a5f;border-radius:10px;padding:16px;margin-bottom:12px;"><code style="color:#22c55e;font-size:11px;word-break:break-all;font-family:'SF Mono','Fira Code',monospace;line-height:1.6;">${configSnippet.replace(/</g, '&lt;')}</code></div><p style="color:#94a3b8;font-size:14px;margin:0 0 32px;">Restart Claude Desktop and try: <em style="color:#fff;">"What is the current National Living Wage?"</em></p><hr style="border:none;border-top:1px solid #1e3a5f;margin:0 0 24px;"><p style="color:#475569;font-size:13px;margin:0;">Questions? Reply to this email or contact <a href="mailto:traveltaxdesk@gmail.com" style="color:#22c55e;">traveltaxdesk@gmail.com</a></p><p style="color:#475569;font-size:12px;margin:12px 0 0;"><a href="https://clearcheck-uk.github.io/clearrates" style="color:#475569;">clearrates.io</a> · UK Statutory Employment Rates for Claude</p></div></body></html>`
+
+  await axios.post('https://api.resend.com/emails', {
+    from: 'ClearRates <onboarding@resend.dev>',
+    to: email,
+    subject,
+    html,
+  }, {
+    headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+    timeout: 10000,
+  })
 }
 
 async function validateToken(token: string): Promise<boolean> {
@@ -640,6 +681,50 @@ app.post('/token', async (req: Request, res: Response) => {
   }
   authCodes.delete(code)
   res.json({ access_token: signJWT({ sub: entry.key }, 60 * 60 * 24 * 30), token_type: 'bearer', expires_in: 60 * 60 * 24 * 30 })
+})
+
+// ── Stripe webhook ────────────────────────────────────────────────────────────
+
+app.post('/stripe-webhook', express.raw({ type: 'application/json' }), async (req: Request, res: Response) => {
+  const sig = req.headers['stripe-signature'] as string
+  const payload = (req.body as Buffer).toString()
+
+  if (!verifyStripeSignature(payload, sig || '', STRIPE_WEBHOOK_SECRET)) {
+    res.status(400).json({ error: 'Invalid signature' }); return
+  }
+
+  const event = JSON.parse(payload)
+
+  try {
+    if (event.type === 'checkout.session.completed') {
+      const session = event.data.object
+      const email = session.customer_details?.email || session.customer_email
+      const subId = session.subscription || session.id
+      if (email && subId) {
+        const key = generateLicenceKey(email, subId)
+        await sendLicenceEmail(email, key, false)
+        console.log(`Licence key sent to ${email}`)
+      }
+    }
+
+    if (event.type === 'invoice.payment_succeeded') {
+      const invoice = event.data.object
+      const isRenewal = invoice.billing_reason === 'subscription_cycle'
+      if (isRenewal) {
+        const email = invoice.customer_email
+        const subId = invoice.subscription
+        if (email && subId) {
+          const key = generateLicenceKey(email, subId)
+          await sendLicenceEmail(email, key, true)
+          console.log(`Renewal key sent to ${email}`)
+        }
+      }
+    }
+  } catch (e: any) {
+    console.error('Webhook handler error:', e.message)
+  }
+
+  res.json({ received: true })
 })
 
 // ── MCP handler ───────────────────────────────────────────────────────────────
